@@ -1,0 +1,143 @@
+# =============================================================================
+# .claudeignore — Added by claude-context-kit
+# =============================================================================
+# Prevents Claude Code from scanning files that waste tokens.
+# Every file excluded here saves tokens on EVERY conversation turn.
+# Customize for your stack — uncomment the sections you need.
+# =============================================================================
+
+# -- Dependencies -------------------------------------------------------------
+node_modules/
+vendor/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.bundle/
+Pods/
+
+# -- Lock files (massive, almost zero signal) ---------------------------------
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+Gemfile.lock
+poetry.lock
+composer.lock
+Cargo.lock
+
+# -- Build output -------------------------------------------------------------
+.next/
+out/
+dist/
+build/
+.turbo/
+.nuxt/
+.output/
+.svelte-kit/
+target/
+*.min.js
+*.min.css
+*.bundle.js
+*.chunk.js
+
+# -- Generated / compiled ----------------------------------------------------
+*.tsbuildinfo
+*.d.ts.map
+.generated/
+generated/
+__generated__/
+
+# -- Environment & secrets ----------------------------------------------------
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
+# -- IDE & OS -----------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -- Test artifacts -----------------------------------------------------------
+coverage/
+.nyc_output/
+test-results/
+*.lcov
+htmlcov/
+
+# -- Binary assets (no text value for Claude) ---------------------------------
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.webp
+*.avif
+*.mp4
+*.mp3
+*.wav
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.pdf
+*.zip
+*.tar.gz
+*.jar
+*.exe
+*.dll
+*.so
+*.dylib
+
+# -- Large data files ---------------------------------------------------------
+*.csv
+*.parquet
+*.sqlite
+*.db
+
+# -- Logs ---------------------------------------------------------------------
+*.log
+logs/
+
+# =============================================================================
+# STACK-SPECIFIC — Uncomment sections relevant to your project
+# =============================================================================
+
+# -- Next.js / React ---------------------------------------------------------
+# public/
+
+# -- Python / Django / Flask --------------------------------------------------
+# migrations/
+# *.egg-info/
+# .tox/
+# .mypy_cache/
+
+# -- Rust ---------------------------------------------------------------------
+# target/
+
+# -- Java / Kotlin ------------------------------------------------------------
+# .gradle/
+# *.class
+
+# -- Go ----------------------------------------------------------------------
+# go.sum
+# bin/
+
+# -- Convex -------------------------------------------------------------------
+# convex/_generated/api.d.ts
+# convex/_generated/api.js
+# convex/_generated/server.d.ts
+# convex/_generated/server.js
+
+# -- Docker / Infra (uncomment if you rarely edit these) ----------------------
+# docker-compose.yml
+# Dockerfile
+# terraform/
+# .github/
