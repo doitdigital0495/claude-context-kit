@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "One-command toolkit to prevent Claude Code usage limit spikes. Adds .claudeignore, context management rules, and a context-audit skill to any project.",
   "bin": {
-    "claude-context-kit": "./bin/cli.js"
+    "claude-context-kit": "bin/cli.js"
   },
   "keywords": [
     "claude",
@@ -14,11 +14,12 @@
     "usage-limits",
     "developer-tools"
   ],
-  "author": "doitdigital0495",
+  "type": "commonjs",
+  "author": "Do IT Digital",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/doitdigital0495/claude-context-kit.git"
+    "url": "git+https://github.com/doitdigital0495/claude-context-kit.git"
   },
   "homepage": "https://github.com/doitdigital0495/claude-context-kit#readme",
   "files": [

@@ -1,5 +1,8 @@
 # claude-context-kit
 
+[![npm version](https://img.shields.io/npm/v/claude-context-kit)](https://www.npmjs.com/package/claude-context-kit)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 **Stop burning through your Claude Code usage limits.**
 
 One command to add context management to any project — `.claudeignore`, `CLAUDE.md` rules, context discipline rules, and a diagnostic skill. Everything installs inside your project repo.
@@ -12,11 +15,13 @@ This kit fixes that at every layer:
 
 | Problem | Fix | Impact |
 |---|---|---|
-| Claude scans `node_modules`, lock files, build output | `.claudeignore` blocks them | **40-70% less context per turn** |
-| Claude reads entire 1000-line files | CLAUDE.md rules enforce targeted reads | **60% fewer wasted tokens** |
+| Claude scans `node_modules`, lock files, build output | `.claudeignore` blocks them | **Significantly less context per turn** |
+| Claude reads entire 1000-line files | CLAUDE.md rules enforce targeted reads | **Far fewer wasted tokens** |
 | Auto-compact triggers at 95% (too late) | Rules enforce compaction at 60% | **Better summaries, longer sessions** |
 | Subagents spawn full context windows (7-15x) | Discipline rules for model selection + spawn limits | **Prevents runaway agent costs** |
 | No way to diagnose what's eating tokens | `/context-audit` skill | **On-demand diagnostic** |
+
+> Impact varies by project size. Community reports suggest 40-70% context reduction from `.claudeignore` alone on typical Node/Python projects ([source](https://medium.com/@jpranav97/stop-wasting-tokens-how-to-optimize-claude-code-context-by-60-bfad6fd477e5)).
 
 ## Install
 

@@ -73,7 +73,8 @@ fi
 if [ -f ".claudeignore" ]; then
   skip ".claudeignore already exists — skipping"
 else
-  fetch "$BASE_URL/claudeignore" > .claudeignore
+  tmpfile=$(mktemp)
+  fetch "$BASE_URL/claudeignore" > "$tmpfile" && mv "$tmpfile" .claudeignore
   ok ".claudeignore created — junk files now excluded from context"
 fi
 
@@ -99,7 +100,8 @@ if [ -f "$RULES_FILE" ]; then
   skip ".claude/rules/context-discipline.md already exists — skipping"
 else
   mkdir -p "$RULES_DIR"
-  fetch "$BASE_URL/rules/context-discipline.md" > "$RULES_FILE"
+  tmpfile=$(mktemp)
+  fetch "$BASE_URL/rules/context-discipline.md" > "$tmpfile" && mv "$tmpfile" "$RULES_FILE"
   ok "Rules installed at .claude/rules/context-discipline.md"
 fi
 
@@ -109,8 +111,9 @@ if [ -f "$SKILL_DIR/SKILL.md" ]; then
   skip ".claude/skills/context-audit/ already exists — skipping"
 else
   mkdir -p "$SKILL_DIR"
-  fetch "$BASE_URL/skill/SKILL.md" > "$SKILL_DIR/SKILL.md"
-  fetch "$BASE_URL/skill/workflow.md" > "$SKILL_DIR/workflow.md"
+  tmpfile1=$(mktemp) && tmpfile2=$(mktemp)
+  fetch "$BASE_URL/skill/SKILL.md" > "$tmpfile1" && fetch "$BASE_URL/skill/workflow.md" > "$tmpfile2" \
+    && mv "$tmpfile1" "$SKILL_DIR/SKILL.md" && mv "$tmpfile2" "$SKILL_DIR/workflow.md"
   ok "context-audit skill installed at .claude/skills/context-audit/"
 fi
 

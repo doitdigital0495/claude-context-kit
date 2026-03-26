@@ -120,7 +120,7 @@ logs/
 # .mypy_cache/
 
 # -- Rust ---------------------------------------------------------------------
-# target/
+# (target/ already included in Build output above)
 
 # -- Java / Kotlin ------------------------------------------------------------
 # .gradle/
