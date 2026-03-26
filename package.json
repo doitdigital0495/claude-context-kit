@@ -1,6 +1,6 @@
 {
   "name": "claude-context-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "One-command toolkit to prevent Claude Code usage limit spikes. Adds .claudeignore, context management rules, and a context-audit skill to any project.",
   "bin": {
     "claude-context-kit": "bin/cli.js"
