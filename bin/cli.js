@@ -3,7 +3,6 @@
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
-const os = require("os");
 
 // ── Colors (ANSI) ───────────────────────────────────────────────────────────
 const c = {
@@ -23,9 +22,8 @@ const MARKER = "<!-- claude-context-kit -->";
 // ── Paths ───────────────────────────────────────────────────────────────────
 const templatesDir = path.join(__dirname, "..", "templates");
 const projectDir = process.cwd();
-const homeDir = os.homedir();
-const globalRulesDir = path.join(homeDir, ".claude", "rules");
-const projectClaudeDir = path.join(projectDir, ".claude", "skills", "context-audit");
+const projectRulesDir = path.join(projectDir, ".claude", "rules");
+const projectSkillDir = path.join(projectDir, ".claude", "skills", "context-audit");
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function logo() {
@@ -53,6 +51,22 @@ function readTemplate(name) {
 
 function fileExists(p) {
   return fs.existsSync(p);
+}
+
+/**
+ * Detect where CLAUDE.md lives in this project.
+ * Returns the path to the existing file, or the best default location.
+ */
+function detectClaudeMdPath() {
+  const rootPath = path.join(projectDir, "CLAUDE.md");
+  const dotClaudePath = path.join(projectDir, ".claude", "CLAUDE.md");
+
+  // Prefer whichever already exists
+  if (fileExists(dotClaudePath)) return dotClaudePath;
+  if (fileExists(rootPath)) return rootPath;
+
+  // Default: project root (most common convention)
+  return rootPath;
 }
 
 // ── Interactive prompt ──────────────────────────────────────────────────────
@@ -87,40 +101,42 @@ function installClaudeignore() {
 }
 
 function installClaudeMdSnippet() {
-  const dest = path.join(projectDir, "CLAUDE.md");
+  const dest = detectClaudeMdPath();
   const snippet = readTemplate("claude-md-snippet.md");
+  const relativeDest = path.relative(projectDir, dest);
 
   if (fileExists(dest)) {
     const existing = fs.readFileSync(dest, "utf-8");
     if (existing.includes("## Context Management") || existing.includes(MARKER)) {
-      skip("CLAUDE.md already has context management section — skipping");
+      skip(`${relativeDest} already has context management section — skipping`);
       return false;
     }
     fs.writeFileSync(dest, existing + "\n\n" + MARKER + "\n" + snippet);
-    ok("Context management rules appended to existing CLAUDE.md");
+    ok(`Context management rules appended to existing ${relativeDest}`);
   } else {
+    ensureDir(path.dirname(dest));
     fs.writeFileSync(dest, MARKER + "\n" + snippet);
-    ok("CLAUDE.md created with context management rules");
+    ok(`${relativeDest} created with context management rules`);
   }
   return true;
 }
 
-function installGlobalRules() {
-  ensureDir(globalRulesDir);
-  const dest = path.join(globalRulesDir, "context-discipline.md");
+function installRules() {
+  ensureDir(projectRulesDir);
+  const dest = path.join(projectRulesDir, "context-discipline.md");
   if (fileExists(dest)) {
-    skip("~/.claude/rules/context-discipline.md already exists — skipping");
+    skip(".claude/rules/context-discipline.md already exists — skipping");
     return false;
   }
   fs.writeFileSync(dest, readTemplate(path.join("rules", "context-discipline.md")));
-  ok("Global rules installed at ~/.claude/rules/context-discipline.md");
+  ok("Rules installed at .claude/rules/context-discipline.md");
   return true;
 }
 
 function installSkill() {
-  ensureDir(projectClaudeDir);
-  const skillDest = path.join(projectClaudeDir, "SKILL.md");
-  const workflowDest = path.join(projectClaudeDir, "workflow.md");
+  ensureDir(projectSkillDir);
+  const skillDest = path.join(projectSkillDir, "SKILL.md");
+  const workflowDest = path.join(projectSkillDir, "workflow.md");
 
   if (fileExists(skillDest)) {
     skip(".claude/skills/context-audit/ already exists — skipping");
@@ -143,7 +159,7 @@ function summary(installed) {
   if (installed.claudemd)
     console.log(`  ${c.green}2.${c.reset} ${c.bold}CLAUDE.md rules${c.reset} — enforces file read discipline, compaction triggers, model selection`);
   if (installed.rules)
-    console.log(`  ${c.green}3.${c.reset} ${c.bold}Global rules${c.reset} — context discipline loaded in every session`);
+    console.log(`  ${c.green}3.${c.reset} ${c.bold}Project rules${c.reset} — context discipline loaded in sessions for this project`);
   if (installed.skill)
     console.log(`  ${c.green}4.${c.reset} ${c.bold}context-audit skill${c.reset} — run /context-audit to diagnose token bloat`);
 
@@ -157,9 +173,9 @@ function summary(installed) {
   console.log();
   console.log(`  ${c.cyan}1.${c.reset} Run ${c.bold}/compact${c.reset} to free up context in your current session`);
   console.log(`  ${c.cyan}2.${c.reset} Run ${c.bold}/context${c.reset} to see your context usage`);
-  console.log(`  ${c.cyan}3.${c.reset} Review ${c.bold}~/.claude/rules/${c.reset} and move project-specific rules to project-level`);
-  console.log(`  ${c.cyan}4.${c.reset} Disable unused MCP servers with ${c.bold}/mcp${c.reset}`);
+  console.log(`  ${c.cyan}3.${c.reset} Disable unused MCP servers with ${c.bold}/mcp${c.reset}`);
   console.log();
+  console.log(`${c.dim}  All files installed inside this project — nothing touches ~/.claude${c.reset}`);
   console.log(`${c.dim}  Docs: https://github.com/doitdigital0495/claude-context-kit${c.reset}`);
   console.log();
 }
@@ -175,9 +191,10 @@ async function main() {
   // Detect project
   const hasGit = fileExists(path.join(projectDir, ".git"));
   const hasPkg = fileExists(path.join(projectDir, "package.json"));
-  const hasClaudeMd = fileExists(path.join(projectDir, "CLAUDE.md"));
+  const hasClaudeMdRoot = fileExists(path.join(projectDir, "CLAUDE.md"));
+  const hasClaudeMdDot = fileExists(path.join(projectDir, ".claude", "CLAUDE.md"));
 
-  if (!hasGit && !hasPkg && !hasClaudeMd) {
+  if (!hasGit && !hasPkg && !hasClaudeMdRoot && !hasClaudeMdDot) {
     warn("No .git, package.json, or CLAUDE.md found in current directory.");
     warn("Are you in a project root?");
     console.log();
@@ -194,6 +211,9 @@ async function main() {
     }
   } else {
     info(`Project detected: ${c.bold}${path.basename(projectDir)}${c.reset}`);
+    if (hasClaudeMdDot) {
+      info(`CLAUDE.md location: ${c.bold}.claude/CLAUDE.md${c.reset}`);
+    }
   }
 
   console.log();
@@ -211,7 +231,7 @@ async function main() {
     console.log();
     installed.claudeignore = installClaudeignore();
     installed.claudemd = installClaudeMdSnippet();
-    installed.rules = installGlobalRules();
+    installed.rules = installRules();
     installed.skill = installSkill();
   } else {
     // Interactive: ask for each component
@@ -228,9 +248,9 @@ async function main() {
       installed.claudemd = installClaudeMdSnippet();
     else skip("CLAUDE.md rules — skipped by user");
 
-    if (await confirm(rl, `${c.bold}Global rules${c.reset} — add context discipline to ~/.claude/rules/?`))
-      installed.rules = installGlobalRules();
-    else skip("Global rules — skipped by user");
+    if (await confirm(rl, `${c.bold}Project rules${c.reset} — add context discipline to .claude/rules/?`))
+      installed.rules = installRules();
+    else skip("Project rules — skipped by user");
 
     if (await confirm(rl, `${c.bold}context-audit skill${c.reset} — add /context-audit diagnostic skill?`))
       installed.skill = installSkill();

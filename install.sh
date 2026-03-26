@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # claude-context-kit — bash installer
 # Usage: bash <(curl -fsSL https://raw.githubusercontent.com/doitdigital0495/claude-context-kit/main/install.sh)
+#
+# All files are installed inside the project repo — nothing touches ~/.claude
 set -euo pipefail
 
 # ── Colors ───────────────────────────────────────────────────────────────────
@@ -18,7 +20,6 @@ info() { echo -e "  ${BLUE}i${RESET} $1"; }
 
 BASE_URL="https://raw.githubusercontent.com/doitdigital0495/claude-context-kit/main/templates"
 MARKER="<!-- claude-context-kit -->"
-GLOBAL_RULES_DIR="$HOME/.claude/rules"
 
 # ── Header ───────────────────────────────────────────────────────────────────
 echo ""
@@ -27,7 +28,7 @@ echo -e "${DIM}  Stop burning through your Claude Code usage limits${RESET}"
 echo ""
 
 # ── Detect project ───────────────────────────────────────────────────────────
-if [ ! -d ".git" ] && [ ! -f "package.json" ] && [ ! -f "CLAUDE.md" ]; then
+if [ ! -d ".git" ] && [ ! -f "package.json" ] && [ ! -f "CLAUDE.md" ] && [ ! -f ".claude/CLAUDE.md" ]; then
   echo -e "  ${YELLOW}!${RESET} No .git, package.json, or CLAUDE.md found."
   echo -e "  ${YELLOW}!${RESET} Are you in a project root?"
   echo ""
@@ -57,6 +58,17 @@ fetch() {
   fi
 }
 
+# ── Detect CLAUDE.md location ────────────────────────────────────────────────
+# Some projects use .claude/CLAUDE.md, others use CLAUDE.md at root
+if [ -f ".claude/CLAUDE.md" ]; then
+  CLAUDE_MD=".claude/CLAUDE.md"
+  info "CLAUDE.md location: ${BOLD}.claude/CLAUDE.md${RESET}"
+elif [ -f "CLAUDE.md" ]; then
+  CLAUDE_MD="CLAUDE.md"
+else
+  CLAUDE_MD="CLAUDE.md"
+fi
+
 # ── 1. .claudeignore ────────────────────────────────────────────────────────
 if [ -f ".claudeignore" ]; then
   skip ".claudeignore already exists — skipping"
@@ -67,25 +79,28 @@ fi
 
 # ── 2. CLAUDE.md snippet ───────────────────────────────────────────────────
 SNIPPET=$(fetch "$BASE_URL/claude-md-snippet.md")
-if [ -f "CLAUDE.md" ]; then
-  if grep -q "## Context Management" CLAUDE.md 2>/dev/null || grep -q "$MARKER" CLAUDE.md 2>/dev/null; then
-    skip "CLAUDE.md already has context management section — skipping"
+if [ -f "$CLAUDE_MD" ]; then
+  if grep -q "## Context Management" "$CLAUDE_MD" 2>/dev/null || grep -q "$MARKER" "$CLAUDE_MD" 2>/dev/null; then
+    skip "$CLAUDE_MD already has context management section — skipping"
   else
-    printf "\n\n%s\n%s" "$MARKER" "$SNIPPET" >> CLAUDE.md
-    ok "Context management rules appended to existing CLAUDE.md"
+    printf "\n\n%s\n%s" "$MARKER" "$SNIPPET" >> "$CLAUDE_MD"
+    ok "Context management rules appended to existing $CLAUDE_MD"
   fi
 else
-  printf "%s\n%s" "$MARKER" "$SNIPPET" > CLAUDE.md
-  ok "CLAUDE.md created with context management rules"
+  mkdir -p "$(dirname "$CLAUDE_MD")"
+  printf "%s\n%s" "$MARKER" "$SNIPPET" > "$CLAUDE_MD"
+  ok "$CLAUDE_MD created with context management rules"
 fi
 
-# ── 3. Global rules ─────────────────────────────────────────────────────────
-mkdir -p "$GLOBAL_RULES_DIR"
-if [ -f "$GLOBAL_RULES_DIR/context-discipline.md" ]; then
-  skip "~/.claude/rules/context-discipline.md already exists — skipping"
+# ── 3. Project rules ────────────────────────────────────────────────────────
+RULES_DIR=".claude/rules"
+RULES_FILE="$RULES_DIR/context-discipline.md"
+if [ -f "$RULES_FILE" ]; then
+  skip ".claude/rules/context-discipline.md already exists — skipping"
 else
-  fetch "$BASE_URL/rules/context-discipline.md" > "$GLOBAL_RULES_DIR/context-discipline.md"
-  ok "Global rules installed at ~/.claude/rules/context-discipline.md"
+  mkdir -p "$RULES_DIR"
+  fetch "$BASE_URL/rules/context-discipline.md" > "$RULES_FILE"
+  ok "Rules installed at .claude/rules/context-discipline.md"
 fi
 
 # ── 4. context-audit skill ──────────────────────────────────────────────────
@@ -105,8 +120,8 @@ echo -e "${BOLD}  Quick wins you can do right now:${RESET}"
 echo ""
 echo -e "  ${CYAN}1.${RESET} Run ${BOLD}/compact${RESET} to free up context in your current session"
 echo -e "  ${CYAN}2.${RESET} Run ${BOLD}/context${RESET} to see your context usage"
-echo -e "  ${CYAN}3.${RESET} Review ${BOLD}~/.claude/rules/${RESET} and move project-specific rules to project-level"
-echo -e "  ${CYAN}4.${RESET} Disable unused MCP servers with ${BOLD}/mcp${RESET}"
+echo -e "  ${CYAN}3.${RESET} Disable unused MCP servers with ${BOLD}/mcp${RESET}"
 echo ""
+echo -e "${DIM}  All files installed inside this project — nothing touches ~/.claude${RESET}"
 echo -e "${DIM}  Docs: https://github.com/doitdigital0495/claude-context-kit${RESET}"
 echo ""
