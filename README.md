@@ -116,12 +116,12 @@ Includes token cost cheat sheet and compaction templates.
 
 ## Non-Destructive
 
-The installer **never overwrites** existing files:
+The installer never overwrites your existing work:
 
-- If `.claudeignore` exists → skipped
-- If `CLAUDE.md` already has `## Context Management` → skipped
-- If `~/.claude/rules/context-discipline.md` exists → skipped
-- If `.claude/skills/context-audit/` exists → skipped
+- **`.claudeignore`** — if it already exists → skipped (your custom ignores are preserved)
+- **`CLAUDE.md`** — if it exists, the context management section is **appended** below your existing content. If it already contains `## Context Management` → skipped (no duplicates)
+- **`~/.claude/rules/context-discipline.md`** — if it already exists → skipped
+- **`.claude/skills/context-audit/`** — if it already exists → skipped
 
 Safe to run multiple times.
 
